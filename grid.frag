@@ -331,9 +331,27 @@ vec4 raytrace(vec3 ro, vec3 rd, vec2 uv)
         // цвет свечения центра
         vec3 glowColor = vec3(1.0, 0.9, 0.7);
 
-        float rLen = length(p);
+        float rLen = length(p.xz);
+        //кольцо
+        float dRing = abs(rLen-1.0);
+        // свечение
+        float glow = exp(-dRing * 10.0);
+        float vertical = exp(-abs(p.y) * 10.0);
 
-        color += glowColor * (0.1 / r2) * 0.002;
+        if(rLen<3.0){
+            color += glowColor * glow * vertical * 0.08;
+        }
+        // ===== ТУМАН =====
+        float fog = exp(-dRing * 1.8);
+        float fogVertical = exp(-abs(p.y) * 1.8);
+
+        // граница
+        float mask = smoothstep(10.0, 1.0, rLen);
+
+        // шум
+        fog *= 0.8 + 0.2 * noise(p * 3.0 + iTime);
+
+        color += glowColor * fog * fogVertical * mask * dt * 0.2;
 
     }
 
